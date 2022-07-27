@@ -14,26 +14,57 @@
 
       const socket = new WebSocket("ws://localhost:1337");
 
+      const newId = () => Math.round(Math.random() * 100);
+
       socket.onopen = (event) => {
         console.log("Web Socket is connected!");
-        const id = Math.round(Math.random() * 100);
+        const id = newId();
         console.log("Sending...", id);
-        const data = JSON.stringify({
+
+        const smallData = {
           id,
           name: `[${id}] Henrique Holtz`,
           address: {
             street: "My street",
           },
           profession: "developer",
-        });
+        };
 
-        socket.send(data);
+        const smallIntervalId = setInterval(() => {
+          socket.send(JSON.stringify(smallData));
+        }, [1 * 1000]);
+
+        const mediumIntervalId = setInterval(() => {
+          const mediumData = [
+            {
+              ...smallData,
+              id: newId(),
+            },
+            {
+              ...smallData,
+              id: newId(),
+            },
+            {
+              ...smallData,
+              id: newId(),
+            },
+          ];
+          socket.send(JSON.stringify(mediumData));
+        }, [3 * 1000]);
+
+        setTimeout(() => {
+          clearInterval(smallIntervalId);
+        }, 5 * 1000);
+
+        setTimeout(() => {
+          clearInterval(mediumIntervalId);
+        }, 9 * 1000);
       };
 
       socket.onmessage = (msg) => {
         const message = msg.data;
         console.log("I got a message!", event);
-        messages.innerHTML += `<br /> ${message}`;
+        messages.innerHTML += `<br /> <br /> ${message}`;
       };
 
       socket.onerror = (err) => console.log(`Web Socket error`, err);
